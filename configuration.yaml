@@ -1,0 +1,10 @@
+application:
+  port: 7000
+  host: 127.0.0.1
+database:
+  host: "localhost"
+  port: 8000
+  username: "root"
+  password: "root"
+  database_name: "pizzas"
+  namespace: "surreal"
