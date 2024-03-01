@@ -1,11 +1,32 @@
-use crate::domain::buy_pizza_request::BuyPizzaRequest;
-use actix_web::{post, web::Json, HttpResponse, Responder};
+use crate::{
+    database::Database,
+    domain::{buy_pizza_request::BuyPizzaRequest, pizza::Pizza},
+    error::PizzaError,
+};
+use actix_web::{
+    post,
+    web::{Data, Json},
+    HttpResponse, Responder,
+};
+use uuid::Uuid;
 use validator::Validate;
 
 #[post("/v1/pizza")]
-pub async fn buy_pizza(body: Json<BuyPizzaRequest>) -> impl Responder {
+pub async fn buy_pizza(
+    body: Json<BuyPizzaRequest>,
+    db: Data<Database>,
+) -> Result<Json<Pizza>, PizzaError> {
     match body.validate() {
-        Ok(_) => HttpResponse::Ok().finish(),
-        Err(_) => HttpResponse::BadRequest().finish(),
+        Ok(_) => {
+            let uuid = Uuid::new_v4().to_string();
+            let name = body.name.clone();
+            let new_pizza = Pizza::new(uuid, name);
+            let result = db.create_pizza(&new_pizza).await;
+            match result {
+                Some(created) => Ok(Json(created)),
+                None => Err(PizzaError::PizzaCreationFailure),
+            }
+        }
+        Err(_) => Err(PizzaError::PizzaCreationFailure),
     }
 }
