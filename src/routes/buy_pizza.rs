@@ -1,12 +1,11 @@
 use crate::{
-    database::Database,
+    database::{Database,PizzaDataTrait},
     domain::{buy_pizza_request::BuyPizzaRequest, pizza::Pizza},
     error::PizzaError,
 };
 use actix_web::{
     post,
     web::{Data, Json},
-    HttpResponse, Responder,
 };
 use uuid::Uuid;
 use validator::Validate;

@@ -3,7 +3,11 @@ use actix_web::{
     web::{Data, Json},
 };
 
-use crate::{database::Database, domain::pizza::Pizza, error::PizzaError};
+use crate::{
+    database::{Database, PizzaDataTrait},
+    domain::pizza::Pizza,
+    error::PizzaError,
+};
 
 #[get("/v1/pizza")]
 pub async fn show_pizzas(db: Data<Database>) -> Result<Json<Vec<Pizza>>, PizzaError> {

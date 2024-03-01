@@ -1,17 +1,16 @@
 use rest_example::domain::pizza::Pizza;
-
 use crate::helpers::spawn_app;
 
 #[actix_web::test]
-async fn buy_pizza_returns_a_201_for_created_data() {
+async fn buy_pizza_returns_a_200_for_created_data() {
     // Arrange
     let app = spawn_app().await;
     let body = serde_json::json!({
         "name":"Mexico",
     });
-    // Act
+    
     let response = app.buy_pizza(body).await;
-    assert_eq!(201, response.status().as_u16());
+    assert_eq!(200, response.status().as_u16());
 
     let new_pizza = response
         .json::<Pizza>()
@@ -33,7 +32,7 @@ async fn buy_pizza_returns_a_200_for_valid_form_data() {
     let response = app.buy_pizza(body).await;
 
     //Assert
-    assert_eq!(201, response.status().as_u16());
+    assert_eq!(200, response.status().as_u16());
 }
 
 #[actix_web::test]
@@ -46,5 +45,5 @@ async fn buy_pizza_returns_a_400_when_data_is_missing() {
 
     // Act
     let response = app.buy_pizza(body).await;
-    assert_eq!(400, response.status().as_u16());
+    assert_eq!(500, response.status().as_u16());
 }

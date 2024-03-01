@@ -17,12 +17,19 @@ impl TestApp {
             .send()
             .await
             .expect("Failed to execute request")
-            
     }
 
     pub async fn show_pizzas(&self) -> reqwest::Response {
         self.http_client
             .get(format!("{}/v1/pizza", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn update_pizza(&self, uuid: String) -> reqwest::Response {
+        self.http_client
+            .patch(format!("{}/v1/pizza/{}", &self.address, uuid))
             .send()
             .await
             .expect("Failed to execute request")
@@ -35,7 +42,6 @@ pub async fn spawn_app() -> TestApp {
 
     let test_namespace = Uuid::new_v4();
     configuration.database.namespace = test_namespace.to_string();
-
 
     let db_client = Database::init(&configuration.database)
         .await

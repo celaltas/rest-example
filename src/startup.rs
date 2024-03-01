@@ -4,7 +4,7 @@ use std::net::TcpListener;
 use crate::{
     database::Database,
     routes::{
-        buy_pizza::buy_pizza, delete_pizza::delete_pizza, healthcheck::healthcheck,
+        buy_pizza::buy_pizza,healthcheck::healthcheck,
         show_pizzas::show_pizzas, update_pizza::update_pizza,
     },
 };
@@ -17,7 +17,6 @@ pub fn run(listener: TcpListener, db_client: Database) -> Result<Server, std::io
             .service(buy_pizza)
             .service(update_pizza)
             .service(show_pizzas)
-            .service(delete_pizza)
             .app_data(db_client.clone())
     })
     .listen(listener)?

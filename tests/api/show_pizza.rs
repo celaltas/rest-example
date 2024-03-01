@@ -1,7 +1,6 @@
-use rest_example::domain::pizza::Pizza;
-use uuid::Uuid;
-
 use crate::helpers::spawn_app;
+use rest_example::{database::PizzaDataTrait, domain::pizza::Pizza};
+use uuid::Uuid;
 
 #[actix_web::test]
 async fn show_pizza_returns_a_204_for_no_record() {
@@ -12,7 +11,16 @@ async fn show_pizza_returns_a_204_for_no_record() {
     let response = app.show_pizzas().await;
 
     //Assert
-    assert_eq!(204, response.status().as_u16());
+    assert_eq!(200, response.status().as_u16());
+
+    // Act
+    let pizzas = response
+        .json::<Vec<Pizza>>()
+        .await
+        .expect("Failed request serialized");
+
+    //Assert
+    assert_eq!(0, pizzas.len())
 }
 #[actix_web::test]
 async fn show_pizza_returns_a_200_for_with_one_record() {

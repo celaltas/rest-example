@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb::opt::auth::Root;
 use surrealdb::{Error, Surreal};
@@ -10,6 +11,13 @@ pub struct Database {
     pub client: Surreal<Client>,
     pub name_space: String,
     pub db_name: String,
+}
+
+#[async_trait]
+pub trait PizzaDataTrait {
+    async fn get_all_pizzas(&self) -> Option<Vec<Pizza>>;
+    async fn create_pizza(&self, new_pizza: &Pizza) -> Option<Pizza>;
+    async fn update_pizza(&self, uuid: String) -> Option<Pizza>;
 }
 
 impl Database {
@@ -30,20 +38,23 @@ impl Database {
             .unwrap();
 
         Ok(Database {
-            client: client,
+            client,
             name_space: setting.namespace.clone(),
             db_name: setting.database_name.clone(),
         })
     }
+}
 
-    pub async fn get_all_pizzas(&self) -> Option<Vec<Pizza>> {
+#[async_trait]
+impl PizzaDataTrait for Database {
+    async fn get_all_pizzas(&self) -> Option<Vec<Pizza>> {
         match self.client.select("pizza").await {
             Ok(res) => Some(res),
             Err(_) => None,
         }
     }
 
-    pub async fn create_pizza(&self, new_pizza: &Pizza) -> Option<Pizza> {
+    async fn create_pizza(&self, new_pizza: &Pizza) -> Option<Pizza> {
         let created_pizza = self
             .client
             .create(("pizza", new_pizza.uuid.clone().to_string()))
@@ -51,10 +62,32 @@ impl Database {
             .await;
         match created_pizza {
             Ok(created) => created,
-            Err(e) => {
-                println!("error occured {:#?}", e.to_string());
-                None
-            }
+            Err(_) => None,
+        }
+    }
+
+    async fn update_pizza(&self, uuid: String) -> Option<Pizza> {
+        let find_pizza: Result<Option<Pizza>, Error> = self.client.select(("pizza", &uuid)).await;
+        match find_pizza {
+            Ok(found) => match found {
+                Some(_) => {
+                    let updated_pizza: Result<Option<Pizza>, Error> = self
+                        .client
+                        .update(("pizza", &uuid))
+                        .merge(Pizza {
+                            uuid,
+                            name: String::from("Sold"),
+                        })
+                        .await;
+
+                    match updated_pizza {
+                        Ok(updated) => updated,
+                        Err(_) => None,
+                    }
+                }
+                None => None,
+            },
+            Err(_) => None,
         }
     }
 }
